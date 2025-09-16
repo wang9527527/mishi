@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>在线书店管理系统</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.6.3/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <!-- 核心表单：书籍信息管理 -->
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+            <legend>在线书店 - 书籍信息管理表单</legend>
+        </fieldset>
+
+        <form class="layui-form" action="" lay-filter="bookForm">
+            <!-- 基础信息：书名+ISBN（核心唯一标识） -->
+            <div class="layui-form-item">
+                <label class="layui-form-label">书籍名称 <span style="color:red">*</span></label>
+                <div class="layui-input-block">
+                    <input type="text" name="bookName" lay-verify="required|bookName" 
+                           placeholder="请输入完整书籍名称" 
+                           autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">ISBN编号 <span style="color:red">*</span></label>
+                <div class="layui-input-block">
+                    <input type="text" name="isbn" lay-verify="required|isbn" 
+                           lay-reqtext="ISBN是书籍唯一标识，不能为空！" 
+                           placeholder="请输入13位数字ISBN" 
+                           autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">作者 <span style="color:red">*</span></label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="author" lay-verify="required" 
+                               placeholder="请输入作者姓名" 
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">出版社 <span style="color:red">*</span></label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="press" lay-verify="required" 
+                               placeholder="请输入出版社全称" 
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">出版日期 <span style="color:red">*</span></label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="publishDate" id="publishDate" 
+                               lay-verify="required|date" placeholder="yyyy-MM-dd" 
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 定价+库存（商业属性） -->
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">书籍定价 <span style="color:red">*</span></label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="price" lay-verify="required|price" 
+                               placeholder="请输入定价" 
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">库存数量 <span style="color:red">*</span></label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="stock" lay-verify="required|stock" 
+                               placeholder="请输入库存（正整数）" 
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">书籍重量</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="weight" placeholder="可选" 
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 书籍分类（多级联动） -->
+            <div class="layui-form-item">
+                <label class="layui-form-label">书籍分类 <span style="color:red">*</span></label>
+                <div class="layui-input-inline">
+                    <select name="mainCategory" lay-verify="required" lay-filter="mainCategory">
+                        <option value="">请选择一级分类</option>
+                        <option value="novel">小说</option>
+                        <option value="tech">科技</option>
+                        <option value="history">历史</option>
+                        <option value="literature">文学</option>
+                        <option value="education">教育</option>
+                    </select>
+                </div>
+                <div class="layui-input-inline">
+                    <select name="subCategory" lay-verify="required" lay-filter="subCategory">
+                        <option value="">请选择二级分类</option>
+                        <!-- 二级分类随一级分类联动（需配合JS实现） -->
+                        <option value="novel_sci-fi" data-parent="novel">科幻小说</option>
+                        <option value="novel_romance" data-parent="novel">言情小说</option>
+                        <option value="tech_comp" data-parent="tech">计算机技术</option>
+                        <option value="tech_ai" data-parent="tech">人工智能</option>
+                        <option value="history_antique" data-parent="history">古代史</option>
+                        <option value="history_modern" data-parent="history">近现代史</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 书籍标签+附加资源（筛选属性） -->
+            <div class="layui-form-item">
+                <label class="layui-form-label">书籍标签</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="tags[bestSeller]" title="畅销">
+                    <input type="checkbox" name="tags[new]" title="新书" checked>
+                    <input type="checkbox" name="tags[discount]" title="折扣">
+                    <input type="checkbox" name="tags[recommend]" title="店长推荐">
+                </div>
+            </div>
+            <div class="layui-form-item" pane>
+                <label class="layui-form-label">附加资源</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="resources[bookmark]" lay-skin="primary" title="附赠书签" checked>
+                    <input type="checkbox" name="resources[audio]" lay-skin="primary" title="配套音频">
+                    <input type="checkbox" name="resources[courseware]" lay-skin="primary" title="电子课件" disabled>
+                </div>
+            </div>
+
+            <!-- 上架状态+语言（运营属性） -->
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">上架状态</label>
+                    <div class="layui-input-inline">
+                        <input type="checkbox" name="isOnSale" checked 
+                               lay-skin="switch" lay-filter="saleSwitch" lay-text="上架|下架">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">书籍语言</label>
+                    <div class="layui-input-inline">
+                        <input type="radio" name="language" value="zh" title="中文" checked>
+                        <input type="radio" name="language" value="en" title="英文">
+                        <input type="radio" name="language" value="bilingual" title="双语">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 书籍描述（富文本+简介） -->
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">书籍简介</label>
+                <div class="layui-input-block">
+                    <textarea name="intro" placeholder="请输入书籍简短介绍（100-200字）" 
+                              class="layui-textarea"></textarea>
+                </div>
+            </div>
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">详细描述</label>
+                <div class="layui-input-block">
+                    <textarea class="layui-textarea layui-hide" name="detail" 
+                              lay-verify="detail" id="bookDetailEditor"></textarea>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="saveBook">保存书籍信息</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置表单</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- 辅助表单：书籍信息初始赋值（用于编辑场景） -->
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">
+            <legend>书籍信息初始赋值演示（编辑场景）</legend>
+        </fieldset>
+
+        <form class="layui-form" action="" lay-filter="editBookForm">
+            <div class="layui-form-item">
+                <label class="layui-form-label">书籍名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="bookName" value="三体1：地球往事" 
+                           lay-verify="required|bookName" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">ISBN编号</label>
+                <div class="layui-input-block">
+                    <input type="text" name="isbn" value="9787536692930" 
+                           lay-verify="required|isbn" autocomplete="off" class="layui-input" readonly>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">作者</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="author" value="刘慈欣" 
+                               lay-verify="required" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">出版社</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="press" value="重庆出版社" 
+                               lay-verify="required" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">出版日期</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="publishDate" id="editPublishDate" 
+                               value="2008-01-01" lay-verify="required|date" 
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="updateBook">更新书籍信息</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- 功能表单：方框风格书籍查询 -->
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">
+            <legend>方框风格 - 书籍查询表单</legend>
+        </fieldset>
+
+        <form class="layui-form layui-form-pane" action="" lay-filter="searchForm">
+            <div class="layui-form-item">
+                <label class="layui-form-label">查询关键词</label>
+                <div class="layui-input-block">
+                    <input type="text" name="searchKey" placeholder="书名/ISBN/作者/出版社" 
+                           autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">分类筛选</label>
+                    <div class="layui-input-inline">
+                        <select name="searchCategory">
+                            <option value="">全部分类</option>
+                            <option value="novel">小说</option>
+                            <option value="tech">科技</option>
+                            <option value="history">历史</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">价格范围</label>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="priceMin" placeholder="最低" 
+                               lay-verify="price" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">-</div>
+                    <div class="layui-input-inline" style="width: 100px;">
+                        <input type="text" name="priceMax" placeholder="最高" 
+                               lay-verify="price" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">上架状态</label>
+                    <div class="layui-input-inline">
+                        <select name="searchSaleStatus">
+                            <option value="">全部状态</option>
+                            <option value="1">已上架</option>
+                            <option value="0">已下架</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">出版社</label>
+                    <div class="layui-input-inline">
+                        <select name="searchPress" lay-search>
+                            <option value="">全部出版社</option>
+                            <option value="重庆出版社">重庆出版社</option>
+                            <option value="人民文学出版社">人民文学出版社</option>
+                            <option value="机械工业出版社">机械工业出版社</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <button class="layui-btn" lay-submit lay-filter="doSearch">查询书籍</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'layedit', 'laydate'], function () {
+        var form = layui.form
+            , layer = layui.layer
+            , layedit = layui.layedit
+            , laydate = layui.laydate;
+
+        // 1. 日期选择器初始化（出版日期）
+        laydate.render({ elem: '#publishDate' });
+        laydate.render({ elem: '#editPublishDate' });
+
+        // 2. 富文本编辑器初始化（书籍详细描述）
+        var editIndex = layedit.build('bookDetailEditor', {
+            tool: ['strong', 'italic', 'underline', 'del', 'link', 'unlink', 'face']
+        });
+
+        // 3. 自定义验证规则（贴合书店场景）
+        form.verify({
+            // 书籍名称：至少2个字符
+            bookName: function (value) {
+                if (value.length < 2) return '书籍名称至少2个字符';
+            },
+            // ISBN：13位数字
+            isbn: [/^\d{13}$/, 'ISBN必须为13位数字'],
+            // 定价：数字+最多2位小数
+            price: [/^\d+(\.\d{1,2})?$/, '定价必须为数字，且最多保留2位小数'],
+            // 库存：正整数
+            stock: [/^[1-9]\d*$/, '库存必须为正整数（如：100）'],
+            // 详细描述：至少50字符
+            detail: function (value) {
+                layedit.sync(editIndex);
+                if (value.length < 50) return '书籍详细描述至少50字符';
+            }
+        });
+
+        // 4. 监听开关（上架状态）
+        form.on('switch(saleSwitch)', function (data) {
+            layer.msg('上架状态：' + (this.checked ? '已上架（用户可购买）' : '已下架（仅库存可见）'), {
+                offset: '6px', icon: this.checked ? 1 : 0
+            });
+        });
+
+        // 5. 监听表单提交（保存书籍）
+        form.on('submit(saveBook)', function (data) {
+            layer.alert('书籍信息保存成功！\n\n' + JSON.stringify(data.field, null, 2), {
+                title: '书籍信息详情', icon: 1
+            });
+            return false; // 阻止默认提交
+        });
+
+        // 6. 监听表单提交（更新书籍）
+        form.on('submit(updateBook)', function (data) {
+            layer.alert('书籍信息更新成功！\n\nISBN：' + data.field.isbn + '\n书名：' + data.field.bookName, {
+                title: '更新结果', icon: 1
+            });
+            return false;
+        });
+
+        // 7. 监听表单提交（查询书籍）
+        form.on('submit(doSearch)', function (data) {
+            layer.msg('查询条件已提交，正在检索书籍...', { icon: 1 });
+            console.log('查询参数：', data.field); // 实际项目中可对接查询接口
+            return false;
+        });
+
+        // 8. 初始化赋值（编辑表单默认值）
+        form.val('editBookForm', {
+            'price': '23.90',
+            'stock': '50',
+            'mainCategory': 'novel',
+            'subCategory': 'novel_sci-fi',
+            'isOnSale': true,
+            'intro': '《三体1：地球往事》是刘慈欣创作的科幻小说'
+        });
+    });
+</script>
+</body>
+</html>

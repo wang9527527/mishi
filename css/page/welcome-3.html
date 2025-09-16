@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>书途漫漫 - 支付与退款</title>
+    <!-- 引入外部资源 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B5A2B',
+                        wechat: '#07C160',
+                        alipay: '#1677FF',
+                        success: '#52C41A',
+                        danger: '#F5222D',
+                        neutral: '#F9F6F0',
+                        'neutral-dark': '#333333'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto { content-visibility: auto; }
+            .card-shadow { box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); }
+            .input-focus { @apply focus:ring-2 focus:ring-primary/50 focus:border-primary focus:outline-none; }
+            .btn-hover { @apply hover:shadow-md hover:-translate-y-0.5 transition-all duration-200; }
+            .payment-active { @apply border-2 border-primary bg-primary/5 relative; }
+            .payment-inactive { @apply border-2 border-gray-200 hover:border-primary/50 hover:bg-gray-50 transition-colors; }
+        }
+    </style>
+    
+    <style>
+        /* 基础样式 */
+        body {
+            background-color: #F9F6F0;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='%23d2b48c' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+        
+        /* 动画 */
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* 滚动条 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c1b096; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a08c73; }
+    </style>
+</head>
+
+<body class="bg-neutral text-neutral-dark">
+    <!-- 导航栏 -->
+    <header class="sticky top-0 z-50 bg-white shadow-sm transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <a href="#" class="flex items-center space-x-2">
+                <i class="fa fa-book text-primary text-2xl"></i>
+                <span class="font-bold text-xl text-primary">书途漫漫</span>
+            </a>
+            <div class="flex items-center space-x-4">
+                <a href="#" class="text-gray-600 hover:text-primary transition-colors relative">
+                    <i class="fa fa-shopping-cart text-xl"></i>
+                    <span class="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">2</span>
+                </a>
+                <a href="#" class="text-gray-600 hover:text-primary transition-colors">
+                    <i class="fa fa-user-circle text-xl"></i>
+                </a>
+                <button class="md:hidden text-gray-600 hover:text-primary" id="menuBtn">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- 标题 -->
+        <div class="mb-8 text-center">
+            <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-gray-800 mb-2">支付与退款中心</h1>
+            <p class="text-gray-500 max-w-2xl mx-auto">书途漫漫，与您同行。安全便捷的支付流程和贴心的退款服务</p>
+        </div>
+        
+        <!-- 选项卡 -->
+        <div class="mb-8 border-b border-gray-200">
+            <div class="flex">
+                <button id="paymentTab" class="px-6 py-3 font-medium text-primary border-b-2 border-primary">
+                    <i class="fa fa-credit-card mr-2"></i>支付订单
+                </button>
+                <button id="refundTab" class="px-6 py-3 font-medium text-gray-500 hover:text-primary transition-colors">
+                    <i class="fa fa-undo mr-2"></i>申请退款
+                </button>
+            </div>
+        </div>
+        
+        <!-- 支付区域 -->
+        <div id="paymentSection" class="fade-in">
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- 订单摘要 -->
+                <div class="md:col-span-1">
+                    <div class="bg-white rounded-xl p-6 card-shadow sticky top-24">
+                        <h2 class="text-xl font-semibold mb-4">订单摘要</h2>
+                        <div class="space-y-4 mb-6 max-h-64 overflow-y-auto pr-2">
+                            <!-- 书籍1 -->
+                            <div class="flex space-x-3 pb-4 border-b border-gray-100">
+                                <img src="../images/三个火枪手.jpg" alt="书籍封面" class="w-20 h-28 object-cover rounded-md">
+                                <div class="flex-1">
+                                    <h3 class="font-medium text-sm line-clamp-2">三个火枪手</h3>
+                                    <p class="text-gray-500 text-xs">大仲马</p>
+                                    <div class="flex justify-between mt-1">
+                                        <span class="text-primary font-medium">¥59.00</span>
+                                        <span class="text-gray-500 text-xs">x1</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 书籍2 -->
+                            <div class="flex space-x-3">
+                                <img src="../images/骆驼祥子.jpg" alt="书籍封面" class="w-20 h-28 object-cover rounded-md">
+                                <div class="flex-1">
+                                    <h3 class="font-medium text-sm line-clamp-2">骆驼祥子</h3>
+                                    <p class="text-gray-500 text-xs">骆驼祥子</p>
+                                    <div class="flex justify-between mt-1">
+                                        <span class="text-primary font-medium">¥68.00</span>
+                                        <span class="text-gray-500 text-xs">x1</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 价格明细 -->
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between"><span class="text-gray-500">商品总价</span><span>¥127.00</span></div>
+                            <div class="flex justify-between"><span class="text-gray-500">运费</span><span>¥0.00</span></div>
+                            <div class="flex justify-between pt-2 border-t border-gray-100 mt-2">
+                                <span class="font-semibold">应付总额</span>
+                                <span class="font-bold text-lg text-primary">¥127.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 支付表单 -->
+                <div class="md:col-span-2">
+                    <div class="bg-white rounded-xl p-6 md:p-8 card-shadow">
+                        <h2 class="text-xl font-semibold mb-6">选择支付方式</h2>
+                        <!-- 支付方式选择 -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                            <div class="payment-active rounded-lg p-4 cursor-pointer flex flex-col items-center justify-center" id="wechatPay">
+                                <i class="fa fa-wechat text-2xl text-wechat mb-2"></i>
+                                <span class="font-medium">微信支付</span>
+                                <div class="absolute top-3 right-3 text-primary"><i class="fa fa-check-circle"></i></div>
+                            </div>
+                            <div class="payment-inactive rounded-lg p-4 cursor-pointer flex flex-col items-center justify-center" id="alipay">
+                                <i class="fa fa-credit-card text-2xl text-alipay mb-2"></i>
+                                <span class="font-medium">支付宝</span>
+                            </div>
+                            <div class="payment-inactive rounded-lg p-4 cursor-pointer flex flex-col items-center justify-center" id="quickPay">
+                                <i class="fa fa-university text-2xl text-gray-600 mb-2"></i>
+                                <span class="font-medium">快捷支付</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 支付表单容器 -->
+                        <div id="paymentFormContainer">
+                            <!-- 微信支付 -->
+                            <div id="wechatPayForm">
+                                <div class="bg-wechat/5 rounded-lg p-6 text-center mb-6">
+                                    <i class="fa fa-wechat text-5xl text-wechat mb-4"></i>
+                                    <p class="text-gray-700 mb-2">请使用微信扫描下方二维码完成支付</p>
+                                    <div class="flex justify-center my-6">
+                                        <div class="w-48 h-48 bg-white p-2 inline-block">
+                                            <div class="w-full h-full flex items-center justify-center border-2 border-dashed border-gray-300">
+                                                <span class="text-sm text-gray-500"></span>
+												<img src="../images/支付码.png"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-500">订单将在15分钟后关闭，请尽快完成支付</p>
+                                </div>
+                                <div class="flex justify-between">
+                                    <button type="button" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">取消支付</button>
+                                    <button type="button" class="px-6 py-2 bg-wechat text-white rounded-lg btn-hover">已完成支付</button>
+                                </div>
+                            </div>
+                            
+                            <!-- 支付宝 (默认隐藏) -->
+                            <div id="alipayForm" class="hidden">
+                                <div class="bg-alipay/5 rounded-lg p-6 text-center mb-6">
+                                    <i class="fa fa-credit-card text-5xl text-alipay mb-4"></i>
+                                    <p class="text-gray-700 mb-2">请使用支付宝扫描下方二维码完成支付</p>
+                                    <div class="flex justify-center my-6">
+                                        <div class="w-48 h-48 bg-white p-2 inline-block">
+                                            <div class="w-full h-full flex items-center justify-center border-2 border-dashed border-gray-300">
+                                                <span class="text-sm text-gray-500"></span>
+												<img src="../images/支付码.png"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-500">订单将在15分钟后关闭，请尽快完成支付</p>
+                                </div>
+                                <div class="flex justify-between">
+                                    <button type="button" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">取消支付</button>
+                                    <button type="button" class="px-6 py-2 bg-alipay text-white rounded-lg btn-hover">已完成支付</button>
+                                </div>
+                            </div>
+                            
+                            <!-- 快捷支付 (默认隐藏) -->
+                            <div id="quickPayForm" class="hidden">
+                                <form>
+                                    <div class="space-y-6">
+                                        <div>
+                                            <label for="cardHolder" class="block text-sm font-medium text-gray-700 mb-1">持卡人姓名</label>
+                                            <input type="text" id="cardHolder" class="w-full px-4 py-3 rounded-lg border border-gray-300 input-focus" placeholder="请输入持卡人姓名" required>
+                                        </div>
+                                        <div>
+                                            <label for="cardNumber" class="block text-sm font-medium text-gray-700 mb-1">银行卡号</label>
+                                            <div class="relative">
+                                                <input type="text" id="cardNumber" class="w-full px-4 py-3 rounded-lg border border-gray-300 input-focus" placeholder="1234 5678 9012 3456" maxlength="19" required>
+                                                <div class="absolute right-3 top-1/2 -translate-y-1/2 flex space-x-1">
+                                                    <i class="fa fa-cc-visa text-gray-400"></i>
+                                                    <i class="fa fa-cc-mastercard text-gray-400"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label for="expiryDate" class="block text-sm font-medium text-gray-700 mb-1">有效期</label>
+                                                <input type="text" id="expiryDate" class="w-full px-4 py-3 rounded-lg border border-gray-300 input-focus" placeholder="MM/YY" maxlength="5" required>
+                                            </div>
+                                            <div>
+                                                <label for="cvv" class="block text-sm font-medium text-gray-700 mb-1">安全码</label>
+                                                <div class="relative">
+                                                    <input type="text" id="cvv" class="w-full px-4 py-3 rounded-lg border border-gray-300 input-focus" placeholder="CVV" maxlength="4" required>
+                                                    <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" title="卡背面最后三位数字">
+                                                        <i class="fa fa-question-circle"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-1">银行预留手机号</label>
+                                            <input type="tel" id="phoneNumber" class="w-full px-4 py-3 rounded-lg border border-gray-300 input-focus" placeholder="请输入手机号" maxlength="11" required>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label for="verifyCode" class="block text-sm font-medium text-gray-700 mb-1">短信验证码</label>
+                                                <input type="text" id="verifyCode" class="w-full px-4 py-3 rounded-lg border border-gray-300 input-focus" placeholder="请输入验证码" maxlength="6" required>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1 invisible">获取验证码</label>
+                                                <button type="button" class="w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">获取验证码</button>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start">
+                                            <input type="checkbox" id="agreeTerms" class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary mt-1" required>
+                                            <label for="agreeTerms" class="ml-2 block text-sm text-gray-700">同意《快捷支付服务协议》和《用户隐私政策》</label>
+                                        </div>
+                                        <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-4 rounded-lg btn-hover flex items-center justify-center">
+                                            <i class="fa fa-lock mr-2"></i>确认支付 ¥107.00
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 退款区域 -->
+        <div id="refundSection" class="hidden fade-in">
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- 退款政策 -->
+                <div class="md:col-span-1">
+                    <div class="bg-white rounded-xl p-6 card-shadow sticky top-24">
+                        <h2 class="text-xl font-semibold mb-4">退款政策</h2>
+                        <div class="space-y-4 text-sm">
+                            <div class="flex items-start">
+                                <div class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+                                    <i class="fa fa-check text-primary text-xs"></i>
+                                </div>
+                                <p class="ml-3">收到商品后30天内，质量问题可申请全额退款</p>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+                                    <i class="fa fa-check text-primary text-xs"></i>
+                                </div>
+                                <p class="ml-3">商品需保持全新，包装完好，不影响二次销售</p>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+                                    <i class="fa fa-check text-primary text-xs"></i>
+                                </div>
+                                <p class="ml-3">审核通过后，3-7个工作日内原路退回</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 pt-6 border-t border-gray-100">
+                            <h3 class="font-medium mb-3">需要帮助？</h3>
+                            <p class="text-sm text-gray-500 mb-4">如有疑问，请联系客服</p>
+                            <a href="#" class="flex items-center text-primary hover:underline text-sm"><i class="fa fa-headphones mr-2"></i>在线客服</a>
+                            <a href="tel:4008889999" class="flex items-center text-primary hover:underline text-sm mt-2"><i class="fa fa-phone mr-2"></i>400-888-9999</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 退款表单 -->
+                <div class="md:col-span-2">
+                    <div class="bg-white rounded-xl p-6 md:p-8 card-shadow">
+                        <h2 class="text-xl font-semibold mb-6">申请退款</h2>
+                        <form>
+                            <div class="space-y-6">
+                                <div>
+                                    <label for="orderNumber" class="block text-sm font-medium text-gray-700 mb-1">订单编号</label>
+                                    <input type="text" id="orderNumber" class="w-full px-4 py-3 rounded-lg border border-gray-300 input-focus" placeholder="请输入订单编号" required>
+                                    <p class="mt-1 text-xs text-gray-500">订单编号可在"我的订单"中查询</p>
+                                </div>
+                                <div>
+                                    <label for="refundItem" class="block text-sm font-medium text-gray-700 mb-1">退款商品</label>
+                                    <select id="refundItem" class="w-full px-4 py-3 rounded-lg border border-gray-300 input-focus appearance-none bg-white" required>
+                                        <option value="" disabled selected>请选择需要退款的商品</option>
+                                        <option value="1">书籍名称1 - ¥59.00</option>
+                                        <option value="2">书籍名称2 - ¥68.00</option>
+                                        <option value="4">全部商品 - ¥107.00</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-3">退款原因</label>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+                                            <input type="radio" name="refundReason" value="质量问题" class="w-4 h-4 text-primary focus:ring-primary">
+                                            <span class="ml-2">商品质量问题</span>
+                                        </label>
+                                        <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+                                            <input type="radio" name="refundReason" value="错发漏发" class="w-4 h-4 text-primary focus:ring-primary">
+                                            <span class="ml-2">错发/漏发商品</span>
+                                        </label>
+                                        <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+                                            <input type="radio" name="refundReason" value="包装破损" class="w-4 h-4 text-primary focus:ring-primary">
+                                            <span class="ml-2">包装破损</span>
+                                        </label>
+                                        <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+                                            <input type="radio" name="refundReason" value="其他原因" class="w-4 h-4 text-primary focus:ring-primary">
+                                            <span class="ml-2">其他原因</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="refundDescription" class="block text-sm font-medium text-gray-700 mb-1">详细说明</label>
+                                    <textarea id="refundDescription" rows="4" class="w-full px-4 py-3 rounded-lg border border-gray-300 input-focus" placeholder="请描述问题，以便快速处理"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">上传凭证（可选）</label>
+                                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer">
+                                        <input type="file" class="hidden" id="proofUpload" multiple accept="image/*">
+                                        <label for="proofUpload" class="cursor-pointer">
+                                            <i class="fa fa-cloud-upload text-3xl text-gray-400 mb-2"></i>
+                                            <p class="text-sm text-gray-500">点击或拖拽图片到此处上传</p>
+                                            <p class="text-xs text-gray-400 mt-1">支持JPG、PNG，最多3张</p>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">退款方式</label>
+                                    <div class="flex items-center p-3 border border-gray-300 rounded-lg">
+                                        <input type="radio" name="refundMethod" value="original" checked class="w-4 h-4 text-primary focus:ring-primary">
+                                        <span class="ml-2">原路返回（支付时使用的方式）</span>
+                                    </div>
+                                </div>
+                                <button type="submit" class="w-full bg-danger hover:bg-danger/90 text-white font-medium py-3 px-4 rounded-lg btn-hover flex items-center justify-center">
+                                    <i class="fa fa-undo mr-2"></i>提交退款申请
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        // 选项卡切换
+        const paymentTab = document.getElementById('paymentTab');
+        const refundTab = document.getElementById('refundTab');
+        const paymentSection = document.getElementById('paymentSection');
+        const refundSection = document.getElementById('refundSection');
+        
+        paymentTab.addEventListener('click', () => {
+            paymentTab.classList.add('text-primary', 'border-b-2', 'border-primary');
+            paymentTab.classList.remove('text-gray-500');
+            refundTab.classList.remove('text-primary', 'border-b-2', 'border-primary');
+            refundTab.classList.add('text-gray-500');
+            paymentSection.classList.remove('hidden');
+            refundSection.classList.add('hidden');
+        });
+        
+        refundTab.addEventListener('click', () => {
+            refundTab.classList.add('text-primary', 'border-b-2', 'border-primary');
+            refundTab.classList.remove('text-gray-500');
+            paymentTab.classList.remove('text-primary', 'border-b-2', 'border-primary');
+            paymentTab.classList.add('text-gray-500');
+            refundSection.classList.remove('hidden');
+            paymentSection.classList.add('hidden');
+        });
+        
+        // 支付方式切换
+        const wechatPay = document.getElementById('wechatPay');
+        const alipay = document.getElementById('alipay');
+        const quickPay = document.getElementById('quickPay');
+        const wechatPayForm = document.getElementById('wechatPayForm');
+        const alipayForm = document.getElementById('alipayForm');
+        const quickPayForm = document.getElementById('quickPayForm');
+        
+        function resetPayment() {
+            [wechatPay, alipay, quickPay].forEach(el => {
+                el.classList.remove('payment-active');
+                el.classList.add('payment-inactive');
+            });
+            [wechatPayForm, alipayForm, quickPayForm].forEach(el => el.classList.add('hidden'));
+        }
+        
+        wechatPay.addEventListener('click', () => {
+            resetPayment();
+            wechatPay.classList.remove('payment-inactive');
+            wechatPay.classList.add('payment-active');
+            wechatPayForm.classList.remove('hidden');
+        });
+        
+        alipay.addEventListener('click', () => {
+            resetPayment();
+            alipay.classList.remove('payment-inactive');
+            alipay.classList.add('payment-active');
+            alipayForm.classList.remove('hidden');
+        });
+        
+        quickPay.addEventListener('click', () => {
+            resetPayment();
+            quickPay.classList.remove('payment-inactive');
+            quickPay.classList.add('payment-active');
+            quickPayForm.classList.remove('hidden');
+        });
+        
+        // 表单格式化
+        const cardNumber = document.getElementById('cardNumber');
+        if (cardNumber) {
+            cardNumber.addEventListener('input', e => {
+                let val = e.target.value.replace(/\D/g, '');
+                e.target.value = val ? val.match(/.{1,4}/g).join(' ') : '';
+            });
+        }
+        
+        const expiryDate = document.getElementById('expiryDate');
+        if (expiryDate) {
+            expiryDate.addEventListener('input', e => {
+                let val = e.target.value.replace(/\D/g, '');
+                e.target.value = val.length > 2 ? val.slice(0, 2) + '/' + val.slice(2) : val;
+            });
+        }
+        
+        // 滚动导航效果
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 10) {
+                header.classList.add('py-2', 'shadow');
+                header.classList.remove('py-3', 'shadow-sm');
+            } else {
+                header.classList.add('py-3', 'shadow-sm');
+                header.classList.remove('py-2', 'shadow');
+            }
+        });
+    </script>
+</body>
+</html>

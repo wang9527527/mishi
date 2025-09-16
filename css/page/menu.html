@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>书途漫漫 - 书店菜单管理系统</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 引入Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  
+  <!-- 配置Tailwind自定义颜色和字体 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#FF7D00',
+            success: '#00B42A',
+            warning: '#FF7D00',
+            danger: '#F53F3F',
+            info: '#86909C',
+            light: '#F2F3F5',
+            dark: '#1D2129',
+            'sidebar-bg': '#001529',
+            'sidebar-active': '#1890ff',
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .sidebar-item {
+        @apply flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-sidebar-active/20 hover:text-white transition-all duration-200 cursor-pointer;
+      }
+      .sidebar-item.active {
+        @apply bg-sidebar-active/20 text-white border-l-4 border-sidebar-active;
+      }
+      .btn {
+        @apply px-4 py-2 rounded-md font-medium transition-all duration-200 flex items-center gap-2;
+      }
+      .btn-primary {
+        @apply bg-primary text-white hover:bg-primary/90 active:bg-primary/80;
+      }
+      .btn-secondary {
+        @apply bg-white text-dark border border-gray-300 hover:bg-gray-50 active:bg-gray-100;
+      }
+      .btn-danger {
+        @apply bg-danger text-white hover:bg-danger/90 active:bg-danger/80;
+      }
+      .card {
+        @apply bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden;
+      }
+      .table-row-hover {
+        @apply hover:bg-gray-50 transition-colors duration-150;
+      }
+    }
+  </style>
+</head>
+
+<body class="font-inter bg-gray-50 text-dark antialiased min-h-screen flex flex-col">
+          <div class="flex items-center gap-2">
+            <i class="fa fa-book text-primary text-2xl"></i>
+            <h1 class="text-xl font-bold text-gray-800">书途漫漫</h1>
+          </div>
+          <span class="hidden md:inline-block text-sm text-gray-500">菜单管理系统</span>
+        </div>
+        
+        
+    <main class="flex-1 overflow-y-auto p-4 lg:p-6 bg-gray-50">
+      <!-- 页面标题和操作区 -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+        <div>
+          <h2 class="text-[clamp(1.25rem,3vw,1.75rem)] font-bold text-gray-800">图书分类管理</h2>
+          <p class="text-gray-500 mt-1">管理书店所有图书的分类信息，包括添加、编辑、删除和查询分类</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <div class="relative">
+            <select class="pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary appearance-none bg-white">
+              <option>全部分类</option>
+              <option>文学小说</option>
+              <option>科技科普</option>
+              <option>历史地理</option>
+              <option>哲学宗教</option>
+              <option>艺术设计</option>
+            </select>
+            <i class="fa fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+          </div>
+          <button class="btn btn-secondary">
+            <i class="fa fa-refresh"></i>
+            <span>刷新</span>
+          </button>
+          <button class="btn btn-primary">
+            <i class="fa fa-plus"></i>
+            <span>添加分类</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 数据概览卡片 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="card p-5 transform hover:-translate-y-1 transition-transform duration-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm">总分类数</p>
+              <h3 class="text-2xl font-bold mt-1">24</h3>
+              <p class="text-success text-sm mt-2 flex items-center">
+                <i class="fa fa-arrow-up mr-1"></i> 3.2% <span class="text-gray-500 ml-1">较上月</span>
+              </p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+              <i class="fa fa-folder-open text-xl"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card p-5 transform hover:-translate-y-1 transition-transform duration-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm">活跃分类</p>
+              <h3 class="text-2xl font-bold mt-1">18</h3>
+              <p class="text-success text-sm mt-2 flex items-center">
+                <i class="fa fa-arrow-up mr-1"></i> 5.7% <span class="text-gray-500 ml-1">较上月</span>
+              </p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center text-success">
+              <i class="fa fa-check-circle text-xl"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card p-5 transform hover:-translate-y-1 transition-transform duration-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm">今日新增</p>
+              <h3 class="text-2xl font-bold mt-1">2</h3>
+              <p class="text-danger text-sm mt-2 flex items-center">
+                <i class="fa fa-arrow-down mr-1"></i> 1.0% <span class="text-gray-500 ml-1">较昨日</span>
+              </p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+              <i class="fa fa-plus-circle text-xl"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card p-5 transform hover:-translate-y-1 transition-transform duration-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm">待审核</p>
+              <h3 class="text-2xl font-bold mt-1">1</h3>
+              <p class="text-warning text-sm mt-2 flex items-center">
+                <i class="fa fa-clock-o mr-1"></i> 1 项待处理
+              </p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center text-warning">
+              <i class="fa fa-hourglass-half text-xl"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 搜索和筛选区 -->
+      <div class="card p-4 mb-6">
+        <form class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">分类名称</label>
+            <input type="text" placeholder="请输入分类名称" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">副分类</label>
+            <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary appearance-none bg-white">
+              <option value="">全部</option>
+              <option value="0">高分小说</option>
+              <option value="1">文学小说</option>
+              <option value="2">科技科普</option>
+              <option value="3">历史地理</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">状态</label>
+            <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary appearance-none bg-white">
+              <option value="">全部</option>
+              <option value="1">启用</option>
+              <option value="0">禁用</option>
+            </select>
+          </div>
+          <div class="flex items-end">
+            <button type="submit" class="btn btn-primary w-full">
+              <i class="fa fa-search"></i>
+              <span>搜索</span>
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- 树形表格 -->
+      <div class="card mb-6">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10">
+                  <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">分类名称</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">父分类</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">图书数量</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">排序号</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建时间</th>
+                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <!-- 顶级分类 -->
+              <tr class="table-row-hover">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <button class="mr-2 text-gray-500 hover:text-primary transition-colors" onclick="toggleTree(this)">
+                      <i class="fa fa-minus-square-o"></i>
+                    </button>
+                    <span class="font-medium text-gray-900">文学小说</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">顶级分类</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">128</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">启用</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-05-12 09:30</td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div class="flex justify-end gap-2">
+                    <button class="text-primary hover:text-primary/80 transition-colors" title="查看">
+                      <i class="fa fa-eye"></i>
+                    </button>
+                    <button class="text-secondary hover:text-secondary/80 transition-colors" title="编辑">
+                      <i class="fa fa-pencil"></i>
+                    </button>
+                    <button class="text-danger hover:text-danger/80 transition-colors" title="删除">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              
+              <!-- 二级分类 -->
+              <tr class="table-row-hover pl-4">
+                <td class="px-6 py-4 whitespace-nowrap pl-10">
+                  <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap pl-10">
+                  <div class="flex items-center">
+                    <button class="mr-2 text-gray-500 hover:text-primary transition-colors" onclick="toggleTree(this)">
+                      <i class="fa fa-minus-square-o"></i>
+                    </button>
+                    <span>中国文学</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">文学小说</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">64</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">启用</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-05-12 09:35</td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div class="flex justify-end gap-2">
+                    <button class="text-primary hover:text-primary/80 transition-colors" title="查看">
+                      <i class="fa fa-eye"></i>
+                    </button>
+                    <button class="text-secondary hover:text-secondary/80 transition-colors" title="编辑">
+                      <i class="fa fa-pencil"></i>
+                    </button>
+                    <button class="text-danger hover:text-danger/80 transition-colors" title="删除">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              
+              <!-- 三级分类 -->
+              <tr class="table-row-hover">
+                <td class="px-6 py-4 whitespace-nowrap pl-16">
+                  <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap pl-16">
+                  <div class="flex items-center">
+                    <span class="ml-4">古典文学</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">中国文学</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">32</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">3</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">启用</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-05-12 09:40</td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div class="flex justify-end gap-2">
+                    <button class="text-primary hover:text-primary/80 transition-colors" title="查看">
+                      <i class="fa fa-eye"></i>
+                    </button>
+                    <button class="text-secondary hover:text-secondary/80 transition-colors" title="编辑">
+                      <i class="fa fa-pencil"></i>
+                    </button>
+                    <button class="text-danger hover:text-danger/80 transition-colors" title="删除">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              
+              <tr class="table-row-hover">
+                <td class="px-6 py-4 whitespace-nowrap pl-16">
+                  <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap pl-16">
+                  <div class="flex items-center">
+                    <span class="ml-4">现当代文学</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">中国文学</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">32</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">4</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">启用</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-05-12 09:42</td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div class="flex justify-end gap-2">
+                    <button class="text-primary hover:text-primary/80 transition-colors" title="查看">
+                      <i class="fa fa-eye"></i>
+                    </button>
+                    <button class="text-secondary hover:text-secondary/80 transition-colors" title="编辑">
+                      <i class="fa fa-pencil"></i>
+                    </button>
+                    <button class="text-danger hover:text-danger/80 transition-colors" title="删除">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              
+              <!-- 二级分类 -->
+              <tr class="table-row-hover">
+                <td class="px-6 py-4 whitespace-nowrap pl-10">
+                  <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap pl-10">
+                  <div class="flex items-center">
+                    <button class="mr-2 text-gray-500 hover:text-primary transition-colors" onclick="toggleTree(this)">
+                      <i class="fa fa-plus-square-o"></i>
+                    </button>
+                    <span>外国文学</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">文学小说</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">64</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">启用</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-05-12 09:45</td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div class="flex justify-end gap-2">
+                    <button class="text-primary hover:text-primary/80 transition-colors" title="查看">
+                      <i class="fa fa-eye"></i>
+                    </button>
+                    <button class="text-secondary hover:text-secondary/80 transition-colors" title="编辑">
+                      <i class="fa fa-pencil"></i>
+                    </button>
+                    <button class="text-danger hover:text-danger/80 transition-colors" title="删除">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              
+              <!-- 顶级分类 -->
+              <tr class="table-row-hover">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <button class="mr-2 text-gray-500 hover:text-primary transition-colors" onclick="toggleTree(this)">
+                      <i class="fa fa-plus-square-o"></i>
+                    </button>
+                    <span class="font-medium text-gray-900">科技科普</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">顶级分类</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">96</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">6</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">启用</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-05-12 10:10</td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div class="flex justify-end gap-2">
+                    <button class="text-primary hover:text-primary/80 transition-colors" title="查看">
+                      <i class="fa fa-eye"></i>
+                    </button>
+                    <button class="text-secondary hover:text-secondary/80 transition-colors" title="编辑">
+                      <i class="fa fa-pencil"></i>
+                    </button>
+                    <button class="text-danger hover:text-danger/80 transition-colors" title="删除">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              
+              <!-- 顶级分类 -->
+              <tr class="table-row-hover">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <button class="mr-2 text-gray-500 hover:text-primary transition-colors" onclick="toggleTree(this)">
+                      <i class="fa fa-plus-square-o"></i>
+                    </button>
+                    <span class="font-medium text-gray-900">历史地理</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">顶级分类</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">72</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">7</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">禁用</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2023-05-12 10:30</td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div class="flex justify-end gap-2">
+                    <button class="text-primary hover:text-primary/80 transition-colors" title="查看">
+                      <i class="fa fa-eye"></i>
+                    </button>
+                    <button class="text-secondary hover:text-secondary/80 transition-colors" title="编辑">
+                      <i class="fa fa-pencil"></i>
+                    </button>
+                    <button class="text-danger hover:text-danger/80 transition-colors" title="删除">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- 分页 -->
+        <div class="px-6 py-4 bg-white border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="text-sm text-gray-500">
+            显示 <span class="font-medium">1</span> 到 <span class="font-medium">7</span> 条，共 <span class="font-medium">24</span> 条记录
+          </div>
+          <div class="flex items-center space-x-1">
+            <button class="px-3 py-1 border border-gray-300 rounded-md bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+              <i class="fa fa-angle-left"></i>
+            </button>
+            <button class="px-3 py-1 border border-primary bg-primary text-white rounded-md">1</button>
+            <button class="px-3 py-1 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50">2</button>
+            <button class="px-3 py-1 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50">3</button>
+            <button class="px-3 py-1 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50">4</button>
+            <button class="px-3 py-1 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50">
+              <i class="fa fa-angle-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+  
+  <!-- 添加/编辑分类模态框 (默认隐藏) -->
+  <div id="categoryModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md transform transition-all scale-95 opacity-0" id="modalContent">
+      <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-lg font-semibold text-gray-800">添加图书分类</h3>
+        <button id="closeModal" class="text-gray-500 hover:text-gray-700">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div class="px-6 py-5">
+        <form>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">分类名称 <span class="text-danger">*</span></label>
+            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" placeholder="请输入分类名称">
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">父分类</label>
+            <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary appearance-none bg-white">
+              <option value="0">顶级分类</option>
+              <option value="1">文学小说</option>
+              <option value="2">科技科普</option>
+              <option value="3">历史地理</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">排序号</label>
+            <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" placeholder="请输入排序号" value="0">
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">状态</label>
+            <div class="flex items-center space-x-4">
+              <label class="inline-flex items-center">
+                <input type="radio" name="status" value="1" class="text-primary focus:ring-primary" checked>
+                <span class="ml-2">启用</span>
+              </label>
+              <label class="inline-flex items-center">
+                <input type="radio" name="status" value="0" class="text-primary focus:ring-primary">
+                <span class="ml-2">禁用</span>
+              </label>
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">分类描述</label>
+            <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" placeholder="请输入分类描述"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end gap-3">
+        <button id="cancelModal" class="btn btn-secondary">取消</button>
+        <button class="btn btn-primary">保存</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 脚本 -->
+  <script>
+    // 侧边栏菜单折叠/展开
+    function toggleMenu(element) {
+      const subMenu = element.nextElementSibling;
+      const icon = element.querySelector('.fa-angle-down');
+      
+      if (subMenu.classList.contains('hidden')) {
+        subMenu.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+      } else {
+        subMenu.classList.add('hidden');
+        icon.classList.remove('rotate-180');
+      }
+    }
+    
+    // 树形表格折叠/展开
+    function toggleTree(element) {
+      const icon = element.querySelector('i');
+      
+      if (icon.classList.contains('fa-plus-square-o')) {
+        icon.classList.remove('fa-plus-square-o');
+        icon.classList.add('fa-minus-square-o');
+        // 实际应用中，这里会显示子节点
+      } else {
+        icon.classList.remove('fa-minus-square-o');
+        icon.classList.add('fa-plus-square-o');
+        // 实际应用中，这里会隐藏子节点
+      }
+    }
+    
+    // 移动端侧边栏切换
+    document.getElementById('sidebar-toggle').addEventListener('click', function() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('hidden');
+      sidebar.classList.toggle('fixed');
+      sidebar.classList.toggle('inset-y-0');
+      sidebar.classList.toggle('left-0');
+      sidebar.classList.toggle('z-50');
+    });
+    
+    // 模态框操作
+    const modal = document.getElementById('categoryModal');
+    const modalContent = document.getElementById('modalContent');
+    const closeModal = document.getElementById('closeModal');
+    const cancelModal = document.getElementById('cancelModal');
+    const addButtons = document.querySelectorAll('.btn-primary:has(.fa-plus)');
+    
+    // 打开模态框
+    addButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        modal.classList.remove('hidden');
+        // 触发动画
+        setTimeout(() => {
+          modalContent.classList.remove('scale-95', 'opacity-0');
+          modalContent.classList.add('scale-100', 'opacity-100', 'transition-all', 'duration-300');
+        }, 10);
+      });
+    });
+    
+    // 关闭模态框
+    function hideModal() {
+      modalContent.classList.remove('scale-100', 'opacity-100');
+      modalContent.classList.add('scale-95', 'opacity-0', 'transition-all', 'duration-300');
+      // 等待动画完成后隐藏
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 300);
+    }
+    
+    closeModal.addEventListener('click', hideModal);
+    cancelModal.addEventListener('click', hideModal);
+    
+    // 点击模态框外部关闭
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        hideModal();
+      }
+    });
+    
+    // 初始化图表
+    window.addEventListener('DOMContentLoaded', function() {
+      // 饼图 - 分类图书数量占比
+      const pieCtx = document.getElementById('categoryPieChart').getContext('2d');
+      new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+          labels: ['文学小说', '科技科普', '历史地理', '哲学宗教', '艺术设计'],
+          datasets: [{
+            data: [128, 96, 72, 48, 32],
+            backgroundColor: [
+              '#165DFF',
+              '#36CFC9',
+              '#FF7D00',
+              '#722ED1',
+              '#F53F3F'
+            ],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right'
+            }
+          }
+        }
+      });
+      
+      // 柱状图 - 分类图书月度新增
+      const barCtx = document.getElementById('categoryBarChart').getContext('2d');
+      new Chart(barCtx, {
+        type: 'bar',
+        data: {
+          labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+          datasets: [
+            {
+              label: '文学小说',
+              data: [12, 19, 8, 15, 20, 14],
+              backgroundColor: '#165DFF'
+            },
+            {
+              label: '科技科普',
+              data: [8, 15, 10, 12, 18, 9],
+              backgroundColor: '#36CFC9'
+            },
+            {
+              label: '历史地理',
+              data: [5, 8, 12, 7, 9, 6],
+              backgroundColor: '#FF7D00'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              grid: {
+                display: false
+              }
+            },
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
