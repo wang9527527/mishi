@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>在线书店 - 系统设置</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../lib/layui-v2.6.3/css/layui.css" media="all">
+    <link rel="stylesheet" href="../css/public.css" media="all">
+    <style>
+        .layui-form-item .layui-input-company {width: auto;padding-right: 10px;line-height: 38px;}
+        .setting-group {margin-bottom: 20px;padding-bottom: 15px;border-bottom: 1px solid #eee;}
+        .setting-group-title {font-size: 16px;color: #333;margin-bottom: 15px;padding-left: 5px;border-left: 3px solid #009688;}
+        
+        /* 背景美化 */
+        body {
+            background-color: #f5f7fa;
+            background-image: 
+                radial-gradient(rgba(150, 180, 210, 0.1) 2px, transparent 2px),
+                radial-gradient(rgba(150, 180, 210, 0.1) 2px, transparent 2px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+        }
+        
+        .layuimini-container {
+            margin: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* 预览图样式优化 */
+        .preview-container {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 15px;
+            border: 1px dashed #e6e6e6;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .preview-container:hover {
+            border-color: #009688;
+            background-color: #fafafa;
+        }
+        
+        .preview-item {
+            position: relative;
+            width: 120px;
+            height: 160px;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .preview-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .preview-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 24px;
+            height: 24px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #ff4d4f;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .preview-item:hover .preview-remove {
+            opacity: 1;
+        }
+        
+        .upload-hint {
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+            line-height: 1.5;
+        }
+        
+        .empty-preview {
+            width: 100%;
+            padding: 30px 0;
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .empty-preview i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <form class="layui-form layuimini-form">
+            <!-- 网站基本设置 -->
+            <div class="setting-group">
+                <h3 class="setting-group-title">网站基本设置</h3>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label required">网站名称</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="sitename" lay-verify="required" lay-reqtext="网站名称不能为空" 
+                               placeholder="请输入网站名称" value="书途漫漫" class="layui-input">
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label required">网站域名</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="domain" lay-verify="required|url" lay-reqtext="网站域名不能为空" 
+                               placeholder="请输入网站域名" value="https://www.starbookstore.com" class="layui-input">
+                    </div>
+                </div>
+                
+                <!-- 网站Logo上传与预览 -->
+                <div class="layui-form-item">
+                    <label class="layui-form-label">网站Logo</label>
+                    <div class="layui-input-block">
+                        <button type="button" class="layui-btn" id="uploadLogo">
+                            <i class="layui-icon">&#xe67c;</i>上传Logo
+                        </button>
+                        <div class="upload-hint">
+                            建议尺寸：200x80px，支持png、jpg、jpeg格式，文件大小不超过2MB
+                        </div>
+                        
+                        <!-- Logo预览区域 -->
+                        <div class="preview-container" id="logoPreview">
+                            <div class="preview-item">
+                                <img src="../images/ll.png""" alt="殊途漫漫Logo" class="preview-img">
+                                <div class="preview-remove" data-index="0">×</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label required">版权信息</label>
+                    <div class="layui-input-block">
+                        <textarea name="copyright" class="layui-textarea"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 图书封面预览设置 -->
+            <div class="setting-group">
+                <h3 class="setting-group-title">图书封面设置</h3>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label">示例封面</label>
+                    <div class="layui-input-block">
+                        <button type="button" class="layui-btn" id="uploadSampleCovers">
+                            <i class="layui-icon">&#xe67c;</i>上传示例封面
+                        </button>
+                        <div class="upload-hint">
+                            建议尺寸：300x450px，支持png、jpg、jpeg格式，用于网站展示效果预览
+                        </div>
+                        
+                        <!-- 图书封面预览区域 -->
+                        <div class="preview-container" id="coversPreview">
+                            <div class="preview-item">
+                                <img src="../images/三个火枪手.jpg" alt="图书封面示例1" class="preview-img">
+                                <div class="preview-remove" data-index="0">×</div>
+                            </div>
+                            <div class="preview-item">
+                                <img src="../images/红星照耀中国.jpg"" alt="图书封面示例2" class="preview-img">
+                                <div class="preview-remove" data-index="1">×</div>
+                            </div>
+                            <div class="preview-item">
+                                <img src="../images/悲惨世界.jpg"" alt="图书封面示例3" class="preview-img">
+                                <div class="preview-remove" data-index="2">×</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 其他设置保持不变 -->
+            <div class="setting-group">
+                <h3 class="setting-group-title">系统性能设置</h3>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label">缓存时间</label>
+                    <div class="layui-input-inline" style="width: 80px;">
+                        <input type="text" name="cache_time" lay-verify="number" value="10" class="layui-input">
+                    </div>
+                    <div class="layui-input-inline layui-input-company">分钟</div>
+                    <div class="layui-form-mid layui-word-aux">设置页面缓存时间，减轻服务器负担</div>
+                </div>
+            </div>
+            
+            <div class="setting-group">
+                <h3 class="setting-group-title">文件上传设置</h3>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label">最大文件上传</label>
+                    <div class="layui-input-inline" style="width: 80px;">
+                        <input type="text" name="max_upload_size" lay-verify="number" value="4096" class="layui-input">
+                    </div>
+                    <div class="layui-input-inline layui-input-company">KB</div>
+                    <div class="layui-form-mid layui-word-aux">提示：1 M = 1024 KB，建议设置4096KB(4M)以上以便上传图书封面和电子书</div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label">上传文件类型</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="allowed_file_types" 
+                               value="png|gif|jpg|jpeg|pdf|epub|mobi|azw3|zip|rar" class="layui-input">
+                        <div class="layui-form-mid layui-word-aux">支持的图书相关格式：pdf(电子书)、epub(电子书)、mobi(Kindle)、azw3(Kindle)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="setting-group">
+                <h3 class="setting-group-title">图书设置</h3>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label">默认图书分类</label>
+                    <div class="layui-input-block">
+                        <select name="default_book_category">
+                            <option value="new">新书上架</option>
+                            <option value="hot" selected>热门推荐</option>
+                            <option value="discount">折扣图书</option>
+                            <option value="all">全部图书</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label">库存预警阈值</label>
+                    <div class="layui-input-inline" style="width: 80px;">
+                        <input type="text" name="stock_warning" lay-verify="number" value="10" class="layui-input">
+                    </div>
+                    <div class="layui-input-inline layui-input-company">本</div>
+                    <div class="layui-form-mid layui-word-aux">当图书库存低于此值时，系统将发出预警</div>
+                </div>
+            </div>
+            
+            <div class="setting-group">
+                <h3 class="setting-group-title">SEO设置</h3>
+                
+                <div class="layui-form-item layui-form-text">
+                    <label class="layui-form-label required">首页标题</label>
+                    <div class="layui-input-block">
+                        <textarea name="homepage_title" class="layui-textarea"></textarea>
+                    </div>
+                </div>
+                
+                <div class="layui-form-item layui-form-text">
+                    <label class="layui-form-label">META关键词</label>
+                    <div class="layui-input-block">
+                        <textarea name="meta_keywords" class="layui-textarea" placeholder="多个关键词用英文状态 , 号分割">online bookstore, book shopping, 正版图书, 电子书, 纸质书, 文学, 科技, 教育</textarea>
+                    </div>
+                </div>
+                
+                <div class="layui-form-item layui-form-text">
+                    <label class="layui-form-label">META描述</label>
+                    <div class="layui-input-block">
+                        <textarea name="meta_description" class="layui-textarea"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn layui-btn-normal" lay-submit lay-filter="setting">确认保存</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'layer', 'upload'], function () {
+        var form = layui.form
+            , layer = layui.layer
+            , upload = layui.upload;
+
+        // 自定义验证规则
+        form.verify({
+            url: function(value) {
+                if(value && !/^(http|https):\/\/.*$/.test(value)) {
+                    return '请输入有效的URL地址，以http://或https://开头';
+                }
+            }
+        });
+
+        // 网站Logo上传
+        var uploadLogo = upload.render({
+            elem: '#uploadLogo'
+            ,url: '/upload/' // 实际应用中替换为真实上传接口
+            ,accept: 'images'
+            ,exts: 'png|jpg|jpeg'
+            ,size: 2048
+            ,before: function(obj){
+                layer.load(2); // 上传loading
+            }
+            ,done: function(res){
+                layer.closeAll('loading');
+                if(res.code === 0){
+                    // 上传成功，添加预览图
+                    var previewContainer = document.getElementById('logoPreview');
+                    previewContainer.innerHTML = `
+                        <div class="preview-item">
+                            <img src="${res.data.src}" alt="网站Logo" class="preview-img">
+                            <div class="preview-remove" data-index="0">×</div>
+                        </div>
+                    `;
+                    bindRemoveEvent();
+                    layer.msg('Logo上传成功', {icon: 1});
+                } else {
+                    layer.msg('上传失败：' + res.msg, {icon: 2});
+                }
+            }
+            ,error: function(){
+                layer.closeAll('loading');
+                layer.msg('上传出错，请重试', {icon: 2});
+            }
+        });
+
+        // 图书封面上传
+        var uploadCovers = upload.render({
+            elem: '#uploadSampleCovers'
+            ,url: '/upload/' // 实际应用中替换为真实上传接口
+            ,accept: 'images'
+            ,exts: 'png|jpg|jpeg'
+            ,size: 4096
+            ,multiple: true
+            ,number: 5
+            ,before: function(obj){
+                layer.load(2); // 上传loading
+            }
+            ,done: function(res){
+                layer.closeAll('loading');
+                if(res.code === 0){
+                    // 上传成功，添加预览图
+                    var previewContainer = document.getElementById('coversPreview');
+                    var newItem = document.createElement('div');
+                    newItem.className = 'preview-item';
+                    newItem.innerHTML = `
+                        <img src="${res.data.src}" alt="图书封面" class="preview-img">
+                        <div class="preview-remove" data-index="${previewContainer.children.length}">×</div>
+                    `;
+                    previewContainer.appendChild(newItem);
+                    bindRemoveEvent();
+                    layer.msg('封面上传成功', {icon: 1});
+                } else {
+                    layer.msg('上传失败：' + res.msg, {icon: 2});
+                }
+            }
+            ,error: function(){
+                layer.closeAll('loading');
+                layer.msg('上传出错，请重试', {icon: 2});
+            }
+        });
+
+        // 绑定删除预览图事件
+        function bindRemoveEvent() {
+            document.querySelectorAll('.preview-remove').forEach(function(elem) {
+                elem.addEventListener('click', function() {
+                    var index = this.getAttribute('data-index');
+                    var previewContainer = this.closest('.preview-container');
+                    
+                    // 移除当前预览项
+                    this.parentElement.remove();
+                    
+                    // 如果预览容器为空，显示空状态
+                    if(previewContainer.children.length === 0) {
+                        previewContainer.innerHTML = `
+                            <div class="empty-preview">
+                                <i class="layui-icon">&#xe68e;</i>
+                                <p>暂无预览图片</p>
+                            </div>
+                        `;
+                    } else {
+                        // 更新索引
+                        updatePreviewIndices(previewContainer);
+                    }
+                });
+            });
+        }
+
+        // 更新预览项索引
+        function updatePreviewIndices(container) {
+            var items = container.querySelectorAll('.preview-item');
+            items.forEach(function(item, index) {
+                item.querySelector('.preview-remove').setAttribute('data-index', index);
+            });
+        }
+
+        // 初始化删除事件绑定
+        bindRemoveEvent();
+
+        // 监听提交
+        form.on('submit(setting)', function (data) {
+            // 模拟保存操作
+            layer.load(2);
+            setTimeout(function(){
+                layer.closeAll('loading');
+                layer.msg('系统设置已保存成功', {icon: 1});
+            }, 800);
+            
+            // 实际应用中，这里应该有AJAX请求将数据提交到服务器
+            console.log('提交的设置数据:', data.field);
+            return false;
+        });
+    });
+</script>
+</body>
+</html>

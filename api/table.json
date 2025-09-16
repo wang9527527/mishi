@@ -1,0 +1,127 @@
+{
+  "code": 0,
+  "msg": "",
+  "count": 1000,
+  "data": [
+    {
+      "id": 10000,
+      "username": "爱吃香菜",
+      "sex": "78元",
+      "city": "微信支付",
+      "sign": "龙族全集",
+      "experience": 1,
+      "logins": 24,
+      "wealth": 1,
+      "classify": "25年09月07日",
+      "score": 78
+    },
+    {
+      "id": 10001,
+      "username": "战神狂龙666",
+      "sex": "32元",
+      "city": "支付宝",
+      "sign": "平凡的世界",
+      "experience": 2,
+      "logins": 58,
+      "wealth": 0,
+      "classify": "25年09月02日",
+      "score": 64
+    },
+    {
+      "id": 10002,
+      "username": "我本无息",
+      "sex": "43元",
+      "city": "快捷支付",
+      "sign": "红与黑",
+      "experience": 1,
+      "logins": 77,
+      "wealth": 1,
+      "classify": "25年09月01日",
+      "score": 43
+    },
+    {
+      "id": 10003,
+      "username": "爱历史的胡萝卜",
+      "sex": "26元",
+      "city": "快捷支付",
+      "sign": "巴黎圣母院",
+      "experience": 1,
+      "logins": 157,
+      "wealth": 1,
+      "classify": "25年09月11日",
+      "score": 26
+    },
+    {
+      "id": 10004,
+      "username": "第九十九章",
+      "sex": "33元",
+      "city": "微信支付",
+      "sign": "边城",
+      "experience": 2,
+      "logins": 51,
+      "wealth": 0,
+      "classify": "25年09月12日",
+      "score": 66
+    },
+    {
+      "id": 10005,
+      "username": "难半就不半",
+      "sex": "32元",
+      "city": "快捷支付",
+      "sign": "父与子",
+      "experience": 3,
+      "logins": 68,
+      "wealth":0,
+      "classify": "25年09月06日",
+      "score": 96
+    },
+    {
+      "id": 10006,
+      "username": "波门",
+      "sex": "33元",
+      "city": "微信支付",
+      "sign": "狼图腾",
+      "experience": 1,
+      "logins": 37,
+      "wealth": 0,
+      "classify": "25年08月19日",
+      "score": 33
+    },
+    {
+      "id": 10007,
+      "username": "会起名",
+      "sex": "42元",
+      "city": "支付宝",
+      "sign": "老人与海",
+      "experience": 1,
+      "logins": 150,
+      "wealth": 1,
+      "classify": "25年08月30日",
+      "score": 42
+    },
+    {
+      "id": 10008,
+      "username": "面面面",
+      "sex": "43元",
+      "city": "支付宝",
+      "sign": "盘龙",
+      "experience": 1,
+      "logins": 133,
+      "wealth": 1,
+      "classify": "25年08月31日",
+      "score": 43
+    },
+    {
+      "id": 10009,
+      "username": "哞哞",
+      "sex": "32元",
+      "city": "微信支付",
+      "sign": "遮天",
+      "experience": 1,
+      "logins": 25,
+      "wealth": 1,
+      "classify": "25年09月03日",
+      "score": 32
+    }
+  ]
+}
